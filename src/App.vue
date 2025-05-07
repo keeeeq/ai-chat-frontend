@@ -7,7 +7,7 @@
           <el-tag type="info" effect="dark">智能对话</el-tag>
         </div>
       </el-header>
-      <el-container>
+      <el-container class="main-container">
         <el-aside width="300px" class="chat-sidebar">
           <div class="sidebar-header">
             <el-button type="primary" @click="createNewChat" size="small">
@@ -312,6 +312,7 @@ onMounted(() => {
   background-color: #f5f7fa;
   max-width: 2560px;
   margin: 0 auto;
+  padding: 0 10%;
 }
 
 .el-header {
@@ -343,6 +344,9 @@ onMounted(() => {
   height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
+  width: 25% !important;
+  min-width: 250px;
+  max-width: 300px;
 }
 
 .sidebar-header {
@@ -411,7 +415,8 @@ onMounted(() => {
 }
 
 .chat-messages {
-  flex: 1;
+  flex: 2;
+  min-height: 60vh;
   overflow-y: auto;
   padding: 30px;
   background-color: white;
@@ -484,6 +489,8 @@ onMounted(() => {
 }
 
 .chat-input {
+  flex: 1;
+  max-height: 30vh;
   background-color: white;
   padding: 30px;
   border-radius: 16px;
@@ -508,6 +515,10 @@ onMounted(() => {
 }
 
 @media (max-width: 2560px) {
+  .app-container {
+    padding: 0 8%;
+  }
+
   .chat-container {
     padding: 20px;
   }
@@ -522,6 +533,10 @@ onMounted(() => {
 }
 
 @media (max-width: 1920px) {
+  .app-container {
+    padding: 0 5%;
+  }
+
   .chat-container {
     padding: 15px;
   }
@@ -532,6 +547,12 @@ onMounted(() => {
 
   .message-content-wrapper {
     max-width: 65%;
+  }
+}
+
+@media (max-width: 1440px) {
+  .app-container {
+    padding: 0 3%;
   }
 }
 </style>

@@ -105,4 +105,3 @@ ai-chat/
 
 - GitHub Issues
 - 电子邮件: 你的邮箱@example.com
-  **_该项目前端部分包括 readme.md 均使用 cursor 零代码生成_**
