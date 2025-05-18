@@ -54,8 +54,8 @@ const tools = ref([
   },
   {
     id: 3,
-    name: "项目3",
-    description: "项目3描述",
+    name: "小说客服",
+    description: "智能小说客服助手",
     icon: "VideoCamera",
     route: "/project3",
   },

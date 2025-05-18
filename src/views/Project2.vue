@@ -132,11 +132,20 @@ const favorabilityChangeClass = computed(() => {
 
 // 解析AI回复中的好感度变化
 const parseFavorabilityChange = (content) => {
-  const match = content.match(/好感[+-]\d+/);
-  if (match) {
-    const change = parseInt(match[0].replace("好感", ""));
-    return change;
+  // 首先尝试匹配"好感+/-数字"格式
+  const changeMatch = content.match(/好感([+-]\d+)/);
+  if (changeMatch) {
+    return parseInt(changeMatch[1]);
   }
+
+  // 如果没有匹配到变化值，则尝试匹配当前好感度
+  const currentMatch = content.match(/当前好感度：(\d+)\/\d+/);
+  if (currentMatch) {
+    const newFavorability = parseInt(currentMatch[1]);
+    const currentFavorability = favorability.value;
+    return newFavorability - currentFavorability;
+  }
+
   return 0;
 };
 
