@@ -67,7 +67,14 @@
               </div>
               <div class="message-content-wrapper">
                 <div class="message-content">
-                  <div class="message-text">{{ message.content }}</div>
+                  <div
+                    class="message-text"
+                    v-html="
+                      message.type === 'ai'
+                        ? parseMarkdown(message.content)
+                        : message.content
+                    "
+                  ></div>
                   <div class="message-time">
                     {{ formatTime(message.timestamp) }}
                   </div>
@@ -134,6 +141,7 @@ import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { marked } from "marked";
 import {
   User,
   ChatDotRound,
@@ -333,6 +341,13 @@ const sendMessage = async () => {
 
 const goToHome = () => {
   router.push("/");
+};
+
+const parseMarkdown = (text) => {
+  if (text) {
+    return marked(text);
+  }
+  return "";
 };
 
 onMounted(async () => {
@@ -587,6 +602,71 @@ onMounted(async () => {
   font-size: 16px;
   line-height: 1.6;
   padding: 16px;
+}
+
+.message-text :deep(p) {
+  margin: 0.5em 0;
+}
+
+.message-text :deep(code) {
+  background-color: #f0f2f5; /* 更淡的背景色 */
+  padding: 0.2em 0.4em;
+  border-radius: 4px; /* 轻微的圆角 */
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace; /* 更现代的等宽字体 */
+  font-size: 0.9em; /* 略微缩小字体大小 */
+  color: #d63384; /* 代码颜色调整 */
+  border: 1px solid #e0e0e0; /* 添加细边框 */
+}
+
+.message-text :deep(pre) {
+  background-color: #f8f9fa; /* 更浅的背景色 */
+  padding: 1em;
+  border-radius: 6px; /* 更大的圆角 */
+  overflow-x: auto;
+  border: 1px solid #e0e0e0; /* 添加细边框 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 轻微的阴影 */
+}
+
+.message-text :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+  border: none; /*移除内部code标签的边框 */
+  color: inherit; /* 继承pre的颜色 */
+  font-size: inherit; /* 继承pre的字体大小 */
+}
+
+.message-text :deep(ul),
+.message-text :deep(ol) {
+  padding-left: 1.8em; /* 增加内边距 */
+  margin: 0.8em 0; /* 调整外边距 */
+}
+
+.message-text :deep(blockquote) {
+  border-left: 5px solid #79bbff; /* 更醒目的引用边框颜色 */
+  margin: 0.8em 0;
+  padding: 0.5em 1.2em; /* 调整内边距 */
+  color: #5a5e66; /* 调整引用文字颜色 */
+  background-color: #f0f8ff; /* 添加背景色 */
+}
+
+.message-text :deep(table) {
+  border-collapse: collapse;
+  width: auto; /* 表格宽度自动 */
+  margin: 1em 0; /* 调整外边距 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 添加轻微阴影 */
+}
+
+.message-text :deep(th),
+.message-text :deep(td) {
+  border: 1px solid #d3dce6; /* 更柔和的边框颜色 */
+  padding: 0.6em 0.8em; /* 调整内边距 */
+  text-align: left; /* 默认左对齐 */
+}
+
+.message-text :deep(th) {
+  background-color: #eef1f6; /* 更浅的表头背景色 */
+  font-weight: 600; /* 加粗表头文字 */
 }
 
 :deep(.el-button) {
