@@ -12,9 +12,9 @@ const routes = [
     component: () => import("../views/Chat.vue"),
   },
   {
-    path: "/project2",
-    name: "Project2",
-    component: () => import("../views/Project2.vue"),
+    path: "/game-mode",
+    name: "GameMode",
+    component: () => import("../views/GameMode.vue"),
   },
   {
     path: "/novel-service",

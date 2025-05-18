@@ -50,7 +50,7 @@ const tools = ref([
     name: "游戏模式",
     description: "有趣的AI互动游戏",
     icon: "Picture",
-    route: "/project2",
+    route: "/game-mode",
   },
   {
     id: 3,
