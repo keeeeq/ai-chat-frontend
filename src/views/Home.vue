@@ -57,7 +57,7 @@ const tools = ref([
     name: "小说客服",
     description: "智能小说客服助手",
     icon: "VideoCamera",
-    route: "/project3",
+    route: "/novel-service",
   },
   {
     id: 4,
