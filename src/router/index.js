@@ -22,9 +22,14 @@ const routes = [
     component: () => import("../views/NovelService.vue"),
   },
   {
-    path: "/project4",
-    name: "Project4",
-    component: () => import("../views/Project4.vue"),
+    path: "/ai/pdf",
+    name: "PdfChat",
+    component: () => import("../views/PdfChat.vue"),
+  },
+  {
+    path: "/ai/pdf/chat/:chatId?",
+    name: "PdfChatDetail",
+    component: () => import("../views/PdfChat.vue"),
   },
 ];
 
