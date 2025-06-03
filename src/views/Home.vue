@@ -61,10 +61,10 @@ const tools = ref([
   },
   {
     id: 4,
-    name: "项目4",
-    description: "项目4描述",
+    name: "PDF知识库",
+    description: "个人RAG知识库，支持PDF文件上传和智能问答",
     icon: "Document",
-    route: "/project4",
+    route: "/ai/pdf",
   },
 ]);
 

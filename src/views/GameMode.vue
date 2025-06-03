@@ -2,7 +2,7 @@
   <div class="project-container">
     <el-header>
       <div class="header-content">
-        <h1 class="header-title" @click="goToHome">AI 工具导航站</h1>
+        <h1 class="header-title" @click="goToHome">游戏模式</h1>
         <el-tag type="success" effect="dark">游戏模式</el-tag>
       </div>
     </el-header>

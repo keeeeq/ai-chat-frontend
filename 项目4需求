@@ -1,0 +1,18 @@
+实现一个个人rag知识库的前端页面，类似chatpdf
+包括聊天历史记录页面，聊天页面，pdf文件上传功能
+后端地址：127.0.0.1：8082
+项目4总路由：/ai/pdf
+聊天页面:@RequestMapping(value = "/chat", produces = "text/html;charset=utf-8")
+文件上传：@RequestMapping("/upload/{chatId}")
+文件下载： @GetMapping("/file/{chatId}")
+
+文件上传最大10mb，pdf格式
+chatId请和项目1的chatId一致
+不需要认证/授权机制
+聊天历史记录的展示形式请和项目1一致
+支持Markdown
+不需要文件预览功能
+需要文件管理功能
+UI尽可能美观，简洁
+错误处理要弹出提示框
+数据存储与之前项目一致

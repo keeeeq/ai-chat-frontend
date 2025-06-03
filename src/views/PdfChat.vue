@@ -1,157 +1,163 @@
 <template>
-  <div class="project-container">
-    <el-container>
-      <!-- 侧边栏 -->
-      <el-aside width="300px" class="sidebar">
-        <div class="sidebar-header">
-          <h2>PDF知识库</h2>
-          <el-button type="primary" @click="createNewChat">
-            <el-icon><Plus /></el-icon>新建对话
-          </el-button>
-        </div>
-
-        <!-- 聊天历史列表 -->
-        <div class="chat-list">
-          <div
-            v-for="chat in chatList"
-            :key="chat.id"
-            class="chat-item"
-            :class="{ active: currentChatId === chat.id }"
-            @click="switchChat(chat.id)"
-          >
+  <div class="chat-app">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <el-tooltip content="点击返回首页" placement="bottom">
+          <h1 class="app-title" @click="goToHome">PDF知识库</h1>
+        </el-tooltip>
+        <el-button type="primary" class="new-chat-btn" @click="createNewChat">
+          <el-icon><Plus /></el-icon>
+          新对话
+        </el-button>
+      </div>
+      <div class="chat-list">
+        <div
+          v-for="chat in chatList"
+          :key="chat.id"
+          :class="['chat-item', { active: currentChatId === chat.id }]"
+          @click="switchChat(chat.id)"
+        >
+          <div class="chat-item-icon">
             <el-icon><ChatDotRound /></el-icon>
-            <div class="chat-item-content">
-              <span class="chat-title">{{ chat.title || "新对话" }}</span>
-              <div class="chat-actions">
-                <el-tooltip content="重命名" placement="top">
-                  <el-button
-                    type="text"
-                    @click.stop="showRenameDialog(chat)"
-                    size="small"
-                  >
-                    <el-icon><Edit /></el-icon>
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip content="删除" placement="top">
-                  <el-button
-                    type="text"
-                    @click.stop="deleteChat(chat.id)"
-                    size="small"
-                  >
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </el-tooltip>
-              </div>
+          </div>
+          <div class="chat-item-info">
+            <div class="chat-item-title">{{ chat.title || "新对话" }}</div>
+            <div class="chat-item-actions">
+              <el-button
+                type="text"
+                @click.stop="showRenameDialog(chat)"
+                class="action-btn"
+              >
+                <el-icon><Edit /></el-icon>
+              </el-button>
+              <el-button
+                type="text"
+                @click.stop="deleteChat(chat.id)"
+                class="action-btn"
+              >
+                <el-icon><Delete /></el-icon>
+              </el-button>
             </div>
           </div>
         </div>
+      </div>
+      <!-- 文件管理区域 -->
+      <div class="file-section">
+        <h3>文件管理</h3>
+        <el-upload
+          v-if="currentChatId"
+          class="upload-area"
+          :action="`http://127.0.0.1:8082/ai/pdf/upload/${currentChatId}`"
+          :on-success="handleUploadSuccess"
+          :on-error="handleUploadError"
+          :before-upload="beforeUpload"
+          :on-progress="handleUploadProgress"
+          :limit="1"
+          accept=".pdf"
+        >
+          <el-button type="primary">
+            <el-icon><Upload /></el-icon>上传PDF文件
+          </el-button>
+          <template #tip>
+            <div class="el-upload__tip">只能上传PDF文件，且不超过10MB</div>
+          </template>
+        </el-upload>
+        <div v-else class="upload-tip">请先选择或创建一个对话</div>
+        <div class="file-list">
+          <div v-for="file in fileList" :key="file.id" class="file-item">
+            <el-icon><Document /></el-icon>
+            <span class="file-name">{{ file.name }}</span>
+            <div class="file-actions">
+              <el-button
+                type="primary"
+                size="small"
+                @click="downloadFile(file.id, file.name)"
+              >
+                下载
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="deleteFile(file.id)"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- 文件管理区域 -->
-        <div class="file-section">
-          <h3>文件管理</h3>
-          <el-upload
-            v-if="currentChatId"
-            class="upload-area"
-            :action="`http://127.0.0.1:8082/ai/pdf/upload/${currentChatId}`"
-            :on-success="handleUploadSuccess"
-            :on-error="handleUploadError"
-            :before-upload="beforeUpload"
-            :on-progress="handleUploadProgress"
-            :limit="1"
-            accept=".pdf"
+    <!-- 主聊天区域 -->
+    <div class="main-content">
+      <div class="chat-container">
+        <div class="messages-container" ref="messageList">
+          <div
+            v-for="msg in messages"
+            :key="msg.id"
+            :class="[
+              'message',
+              msg.role === 'user' ? 'message-user' : 'message-ai',
+            ]"
           >
-            <el-button type="primary">
-              <el-icon><Upload /></el-icon>上传PDF文件
-            </el-button>
-            <template #tip>
-              <div class="el-upload__tip">只能上传PDF文件，且不超过10MB</div>
-            </template>
-          </el-upload>
-          <div v-else class="upload-tip">请先选择或创建一个对话</div>
-
-          <div class="file-list">
-            <div v-for="file in fileList" :key="file.id" class="file-item">
-              <el-icon><Document /></el-icon>
-              <span class="file-name">{{ file.name }}</span>
-              <div class="file-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="downloadFile(file.id, file.name)"
-                >
-                  下载
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="deleteFile(file.id)"
-                >
-                  删除
-                </el-button>
+            <div class="message-avatar">
+              <el-avatar :size="36">
+                <el-icon v-if="msg.role === 'user'"><User /></el-icon>
+                <el-icon v-else><ChatDotRound /></el-icon>
+              </el-avatar>
+            </div>
+            <div class="message-bubble">
+              <div
+                class="message-content"
+                v-html="renderMarkdown(msg.content)"
+              ></div>
+              <div class="message-meta">
+                <span class="message-time">{{
+                  formatTime(msg.timestamp)
+                }}</span>
               </div>
             </div>
           </div>
-        </div>
-      </el-aside>
-
-      <!-- 主内容区 -->
-      <el-main class="main-content">
-        <div v-if="currentChatId" class="chat-container">
-          <!-- 聊天消息列表 -->
-          <div class="message-list" ref="messageList">
-            <div
-              v-for="msg in messages"
-              :key="msg.id"
-              class="message"
-              :class="{ 'user-message': msg.role === 'user' }"
-            >
-              <div class="message-avatar">
-                <el-avatar :size="40">
-                  <el-icon v-if="msg.role === 'user'"><User /></el-icon>
-                  <el-icon v-else><ChatDotRound /></el-icon>
-                </el-avatar>
-              </div>
-              <div class="message-content-wrapper">
-                <div
-                  class="message-content"
-                  v-html="renderMarkdown(msg.content)"
-                ></div>
-                <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
-              </div>
-            </div>
-            <div v-if="loading" class="loading-message">
-              <el-avatar :size="40">
+          <div v-if="loading" class="message message-ai">
+            <div class="message-avatar">
+              <el-avatar :size="36">
                 <el-icon><ChatDotRound /></el-icon>
               </el-avatar>
-              <div class="loading-content">
-                <div class="loading-text">AI 正在思考...</div>
-                <el-skeleton :rows="1" animated />
+            </div>
+            <div class="message-bubble loading">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
             </div>
           </div>
-
-          <!-- 输入区域 -->
-          <div class="input-area">
+        </div>
+        <!-- 输入区域 -->
+        <div class="input-container">
+          <div class="input-wrapper">
             <el-input
               v-model="userInput"
               type="textarea"
               :rows="3"
               placeholder="请输入您的问题..."
               @keyup.enter.ctrl="sendMessage"
+              resize="none"
             />
             <el-button
               type="primary"
+              class="send-btn"
               :loading="loading"
               :disabled="!userInput.trim()"
               @click="sendMessage"
             >
-              发送
+              <el-icon><ChatDotRound /></el-icon>
             </el-button>
           </div>
         </div>
-        <el-empty v-else description="请选择或创建一个对话" />
-      </el-main>
-    </el-container>
+      </div>
+    </div>
 
     <!-- 重命名对话框 -->
     <el-dialog
@@ -577,79 +583,127 @@ const loadChatList = () => {
   // 直接创建一个新对话
   createNewChat();
 };
+
+const goToHome = () => {
+  router.push("/");
+};
 </script>
 
 <style scoped>
-.project-container {
+.chat-app {
+  display: flex;
   height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f7f7f7;
 }
 
 .sidebar {
-  background-color: #fff;
-  border-right: 1px solid #e6e6e6;
-  height: 100vh;
+  width: 280px;
+  background: #ffffff;
+  border-right: 1px solid #e8e8e8;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
   padding: 20px;
-  border-bottom: 1px solid #e6e6e6;
+  border-bottom: 1px solid #e8e8e8;
 }
 
-.sidebar-header h2 {
-  margin: 0 0 15px 0;
+.app-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px;
+}
+
+.new-chat-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  border-radius: 8px;
 }
 
 .chat-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px;
 }
 
 .chat-item {
   display: flex;
   align-items: center;
-  padding: 10px;
-  margin-bottom: 5px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  margin-bottom: 4px;
 }
 
 .chat-item:hover {
-  background-color: #f5f7fa;
+  background-color: #f5f5f5;
 }
 
 .chat-item.active {
-  background-color: #ecf5ff;
+  background-color: #e6f4ff;
 }
 
-.chat-item-content {
-  margin-left: 10px;
+.chat-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.chat-item.active .chat-item-icon {
+  background: #1890ff;
+  color: white;
+}
+
+.chat-item-info {
   flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
-.chat-title {
+.chat-item-title {
+  font-size: 14px;
+  color: #333;
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.chat-actions {
-  opacity: 0;
-  transition: opacity 0.3s;
+.chat-item-actions {
+  display: none;
+  gap: 4px;
 }
 
-.chat-item:hover .chat-actions {
-  opacity: 1;
+.chat-item:hover .chat-item-actions {
+  display: flex;
+}
+
+.action-btn {
+  padding: 4px;
+  color: #999;
+}
+
+.action-btn:hover {
+  color: #1890ff;
 }
 
 .file-section {
-  padding: 20px;
-  border-top: 1px solid #e6e6e6;
+  padding: 16px;
+  border-top: 1px solid #e8e8e8;
 }
 
 .file-list {
@@ -679,95 +733,138 @@ const loadChatList = () => {
 }
 
 .main-content {
-  padding: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .chat-container {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.message-list {
+.messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .message {
   display: flex;
-  margin-bottom: 20px;
-  max-width: 80%;
+  gap: 12px;
+  max-width: 85%;
 }
 
-.message.user-message {
-  margin-left: auto;
+.message-user {
   flex-direction: row-reverse;
-}
-
-.message-avatar {
-  margin: 0 10px;
-}
-
-.message-content-wrapper {
-  background-color: #fff;
-  padding: 10px 15px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.user-message .message-content-wrapper {
-  background-color: #ecf5ff;
-}
-
-.message-time {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 5px;
-}
-
-.loading-message {
-  display: flex;
-  margin-bottom: 20px;
-}
-
-.loading-content {
-  margin-left: 10px;
-  background-color: #fff;
-  padding: 10px 15px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.loading-text {
-  margin-bottom: 10px;
-  color: #909399;
-}
-
-.input-area {
-  padding: 20px;
-  background-color: #fff;
-  border-top: 1px solid #e6e6e6;
-  display: flex;
-  gap: 10px;
-}
-
-.input-area .el-button {
   align-self: flex-end;
 }
 
-:deep(.el-upload) {
-  width: 100%;
+.message-ai {
+  align-self: flex-start;
 }
 
-:deep(.el-upload-dragger) {
-  width: 100%;
+.message-avatar {
+  flex-shrink: 0;
 }
 
-.el-upload__tip {
-  margin-top: 5px;
-  color: #909399;
+.message-bubble {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.message-user .message-bubble {
+  background: #1890ff;
+  color: white;
+}
+
+.message-content {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.message-meta {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.message-user .message-meta {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.input-container {
+  padding: 20px;
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+:deep(.el-textarea__inner) {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 12px;
+  resize: none;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.send-btn {
+  padding: 12px;
+  border-radius: 12px;
+  height: 48px;
+  width: 48px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 50%;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 </style>
